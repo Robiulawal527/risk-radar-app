@@ -1,2 +1,35 @@
-export const colors={bg:'#06111c',bg2:'#081724',card:'rgba(16,28,40,.92)',card2:'#142233',red:'#ff2b2b',red2:'#9f141a',orange:'#ff9800',green:'#35d04f',blue:'#0a84ff',text:'#fff',muted:'#9aa4b2',border:'#26384b'};
-export const shadow={shadowColor:'#000',shadowOffset:{width:0,height:10},shadowOpacity:.35,shadowRadius:18,elevation:8};
+export const colors = {
+  bg: '#06111c',
+  bg2: '#0a1d2d',
+  panel: 'rgba(8, 22, 34, 0.88)',
+  glass: 'rgba(12, 28, 42, 0.72)',
+  glassStrong: 'rgba(13, 31, 46, 0.94)',
+  border: 'rgba(255,255,255,0.13)',
+  text: '#ffffff',
+  muted: '#9aa7b8',
+  red: '#ff2b2b',
+  redDark: '#b9151e',
+  orange: '#ff9f0a',
+  green: '#35d05c',
+  blue: '#0a84ff',
+  shadow: '#000000',
+};
+
+export const radius = {
+  sm: 12,
+  md: 18,
+  lg: 26,
+  pill: 999,
+};
+
+export function riskColor(score: number) {
+  if (score >= 70) return colors.red;
+  if (score >= 40) return colors.orange;
+  return colors.green;
+}
+
+export function riskLabel(score: number) {
+  if (score >= 70) return 'High Risk';
+  if (score >= 40) return 'Medium Risk';
+  return 'Low Risk';
+}

@@ -1,5 +1,77 @@
-import {ScrollView,View,Text,StyleSheet} from 'react-native'; import {useEffect,useState} from 'react'; import Svg,{Polyline,Circle} from 'react-native-svg'; import {safeGet} from '../../src/api'; import {fallbackSummary} from '../../src/data/fallback'; import {colors} from '../../src/theme'; import {Card} from '../../src/components/Card'; import {PrimaryButton} from '../../src/components/PrimaryButton';
-export default function Dashboard(){const[s,setS]=useState<any>(fallbackSummary);useEffect(()=>{safeGet('/crimes/summary',fallbackSummary).then(setS)},[]);return <ScrollView style={styles.container}><Text style={styles.title}>Dashboard</Text><View style={styles.grid}><Stat title='Total Crimes' value={s.totalCrimes} color={colors.red}/><Stat title='High Risk Areas' value={s.highRiskAreas} color={colors.orange}/><Stat title='Safe Areas' value={s.safeAreas} color={colors.green}/></View><Card><Text style={styles.section}>Crime Trend</Text><Spark data={(s.trend||[]).map((x:any)=>x.total)}/></Card><Card style={{marginTop:14}}><Text style={styles.section}>Crime by Category</Text>{(s.crimeBreakdown||[]).slice(0,5).map((c:any,i:number)=><View key={c.type} style={styles.rank}><Text style={styles.rankText}>{i+1}. {c.type}</Text><Text style={styles.pill}>{c.count}</Text></View>)}</Card><Card style={{marginTop:14,marginBottom:30}}><Text style={styles.section}>Area Safety Ranking</Text>{(s.areaRanking||[]).slice(0,5).map((a:any,i:number)=><View key={a.unit} style={styles.rank}><Text style={styles.rankText}>{i+1}. {a.name}</Text><Text style={[styles.pill,{backgroundColor:a.riskScore>=70?colors.red:a.riskScore>=40?colors.orange:colors.green}]}>{a.riskScore}</Text></View>)}<PrimaryButton title='View All Alerts' variant='blue'/></Card></ScrollView>}
-function Stat({title,value,color}:any){return <Card style={[styles.stat,{borderColor:color}]}><Text style={styles.statTitle}>{title}</Text><Text style={[styles.statValue,{color}]}>{value}</Text><Text style={styles.month}>This Month</Text></Card>}
-function Spark({data}:{data:number[]}){const max=Math.max(...data,1);const pts=data.map((v,i)=>`${i*(300/Math.max(data.length-1,1))},${120-(v/max)*100}`).join(' ');return <Svg width='100%' height={140}><Polyline points={pts} fill='none' stroke={colors.red} strokeWidth='3'/>{data.map((v,i)=><Circle key={i} cx={i*(300/Math.max(data.length-1,1))} cy={120-(v/max)*100} r='3' fill={colors.red}/>)}</Svg>}
-const styles=StyleSheet.create({container:{flex:1,backgroundColor:colors.bg,padding:16,paddingTop:56},title:{color:'#fff',fontSize:28,fontWeight:'900',textAlign:'center'},grid:{flexDirection:'row',gap:10,marginVertical:18},stat:{flex:1,padding:12},statTitle:{color:'#fff',fontWeight:'800',fontSize:12},statValue:{fontSize:25,fontWeight:'900',marginTop:6},month:{color:colors.muted,fontSize:11},section:{color:'#fff',fontSize:17,fontWeight:'900',marginBottom:10},rank:{flexDirection:'row',justifyContent:'space-between',alignItems:'center',paddingVertical:9},rankText:{color:'#fff',fontWeight:'800'},pill:{backgroundColor:colors.red,color:'#fff',fontWeight:'900',paddingHorizontal:9,paddingVertical:4,borderRadius:8,overflow:'hidden'}});
+import { LinearGradient } from 'expo-linear-gradient';
+import { useEffect, useState } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { api } from '../../src/api';
+import { GlassCard } from '../../src/components/GlassCard';
+import { colors } from '../../src/theme';
+
+type Dashboard = {
+  totalCrimes: number;
+  highRiskAreas: number;
+  safeAreas: number;
+  byCategory: { type: string; total: number }[];
+  byArea: { area: string; total: number; riskScore: number }[];
+};
+
+export default function DashboardScreen() {
+  const [data, setData] = useState<Dashboard | null>(null);
+
+  useEffect(() => {
+    api.get('/dashboard').then((res) => setData(res.data)).catch(() => null);
+  }, []);
+
+  const stats = [
+    ['Total Crimes', data?.totalCrimes ?? 0, colors.red],
+    ['High Risk Areas', data?.highRiskAreas ?? 0, colors.orange],
+    ['Safe Areas', data?.safeAreas ?? 0, colors.green],
+  ];
+
+  return (
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Text style={styles.title}>Dashboard</Text>
+      <View style={styles.statsRow}>
+        {stats.map(([label, value, color]) => (
+          <LinearGradient key={String(label)} colors={[`${color}44`, 'rgba(13,31,46,0.9)']} style={styles.statCard}>
+            <Text style={styles.statLabel}>{label}</Text>
+            <Text style={[styles.statValue, { color: String(color) }]}>{String(value)}</Text>
+          </LinearGradient>
+        ))}
+      </View>
+
+      <GlassCard style={styles.card}>
+        <Text style={styles.section}>Crime by Category</Text>
+        {(data?.byCategory ?? []).slice(0, 6).map((item, index) => (
+          <View key={`${item.type}-${index}`} style={styles.row}>
+            <Text style={styles.rowText}>{item.type}</Text>
+            <Text style={styles.rowValue}>{item.total}</Text>
+          </View>
+        ))}
+      </GlassCard>
+
+      <GlassCard style={styles.card}>
+        <Text style={styles.section}>Area Safety Ranking</Text>
+        {(data?.byArea ?? []).slice(0, 8).map((item, index) => (
+          <View key={`${item.area}-${index}`} style={styles.row}>
+            <Text style={styles.rowText}>{index + 1}. {item.area}</Text>
+            <Text style={[styles.rowValue, { color: item.riskScore >= 70 ? colors.red : colors.orange }]}>{item.riskScore}</Text>
+          </View>
+        ))}
+      </GlassCard>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: 18, paddingTop: 60, paddingBottom: 110 },
+  title: { color: colors.text, fontSize: 32, fontWeight: '900', marginBottom: 18 },
+  statsRow: { flexDirection: 'row', gap: 10, marginBottom: 16 },
+  statCard: { flex: 1, borderRadius: 20, padding: 14, minHeight: 96, borderWidth: 1, borderColor: colors.border },
+  statLabel: { color: colors.muted, fontSize: 12, fontWeight: '800' },
+  statValue: { fontSize: 28, fontWeight: '900', marginTop: 10 },
+  card: { padding: 18, marginTop: 16 },
+  section: { color: colors.text, fontSize: 20, fontWeight: '900', marginBottom: 12 },
+  row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.07)' },
+  rowText: { color: colors.text, fontSize: 15, fontWeight: '700' },
+  rowValue: { color: colors.text, fontSize: 15, fontWeight: '900' },
+});

@@ -1,4 +1,31 @@
-import {ScrollView,View,Text,StyleSheet,Pressable} from 'react-native'; import {FileText,Bell,MapPin,Users,Settings,LogOut} from 'lucide-react-native'; import {colors} from '../../src/theme'; import {Card} from '../../src/components/Card';
-const menu=[['My Reports',FileText],['My Alerts',Bell],['Saved Locations',MapPin],['Emergency Contacts',Users],['Settings',Settings],['Logout',LogOut]] as any[];
-export default function Profile(){return <ScrollView style={styles.container}><View style={styles.head}><View style={styles.avatar}><Text style={{fontSize:34}}>👤</Text></View><View><Text style={styles.name}>Ahmed Rahman</Text><Text style={styles.email}>ahmed@gmail.com</Text><Text style={styles.edit}>Edit Profile</Text></View></View>{menu.map(([title,Icon])=><Card key={title} style={styles.item}><Icon color={title==='Logout'?colors.red:'#d9e1ea'} size={20}/><Text style={[styles.itemText,title==='Logout'&&{color:colors.red}]}>{title}</Text><Text style={{color:colors.muted}}>›</Text></Card>)}</ScrollView>}
-const styles=StyleSheet.create({container:{flex:1,backgroundColor:colors.bg,padding:18,paddingTop:58},head:{flexDirection:'row',gap:14,alignItems:'center',marginBottom:22},avatar:{width:72,height:72,borderRadius:36,backgroundColor:colors.card2,alignItems:'center',justifyContent:'center',borderWidth:2,borderColor:colors.green},name:{color:'#fff',fontSize:18,fontWeight:'900'},email:{color:colors.muted,marginVertical:3},edit:{color:'#fff',borderColor:colors.border,borderWidth:1,borderRadius:8,paddingHorizontal:12,paddingVertical:4,overflow:'hidden',alignSelf:'flex-start'},item:{flexDirection:'row',alignItems:'center',gap:14,marginBottom:12,padding:15},itemText:{color:'#fff',fontWeight:'800',flex:1}});
+import { ChevronRight, LogOut, MapPin, Settings, Shield, UserRound } from 'lucide-react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { GlassCard } from '../../src/components/GlassCard';
+import { colors } from '../../src/theme';
+
+export default function ProfileScreen() {
+  const items = ['My Reports', 'My Alerts', 'Saved Locations', 'Emergency Contacts', 'Settings'];
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <View style={styles.avatar}><UserRound color={colors.text} size={36} /></View>
+        <View><Text style={styles.name}>Ahmed Rahman</Text><Text style={styles.email}>ahmed@gmail.com</Text></View>
+      </View>
+      <GlassCard style={styles.menu}>
+        {items.map((item, index) => <View key={item} style={styles.row}>{index === 0 ? <Shield color={colors.muted} size={21} /> : index === 2 ? <MapPin color={colors.muted} size={21} /> : <Settings color={colors.muted} size={21} />}<Text style={styles.rowText}>{item}</Text><ChevronRight color={colors.muted} size={20} /></View>)}
+        <View style={styles.row}><LogOut color={colors.red} size={21} /><Text style={[styles.rowText, { color: colors.red }]}>Logout</Text></View>
+      </GlassCard>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.bg, padding: 18, paddingTop: 60 },
+  header: { flexDirection: 'row', gap: 14, alignItems: 'center', marginBottom: 24 },
+  avatar: { width: 70, height: 70, borderRadius: 35, backgroundColor: colors.glassStrong, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border },
+  name: { color: colors.text, fontSize: 20, fontWeight: '900' },
+  email: { color: colors.muted, marginTop: 3 },
+  menu: { padding: 6 },
+  row: { minHeight: 58, flexDirection: 'row', alignItems: 'center', gap: 13, paddingHorizontal: 14, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.06)' },
+  rowText: { color: colors.text, fontSize: 16, fontWeight: '800', flex: 1 },
+});

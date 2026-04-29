@@ -1,3 +1,25 @@
-import {ScrollView,Text,TextInput,StyleSheet,Pressable} from 'react-native'; import {useEffect,useState} from 'react'; import {router} from 'expo-router'; import {Search as SearchIcon} from 'lucide-react-native'; import {safeGet} from '../../src/api'; import {fallbackHeatmap} from '../../src/data/fallback'; import {colors} from '../../src/theme'; import {Card} from '../../src/components/Card'; import {RiskBadge} from '../../src/components/RiskBadge';
-export default function Search(){const[q,setQ]=useState('');const[items,setItems]=useState<any[]>([]);useEffect(()=>{safeGet('/crimes/heatmap',fallbackHeatmap).then(setItems)},[]);const list=items.filter(x=>x.area.toLowerCase().includes(q.toLowerCase()));return <ScrollView style={styles.container}><Text style={styles.title}>Search Location</Text><Card style={styles.search}><SearchIcon color={colors.muted}/><TextInput placeholder='Search area, city, zone...' placeholderTextColor={colors.muted} value={q} onChangeText={setQ} style={styles.input}/></Card>{list.map(x=><Pressable key={x.id} onPress={()=>router.push({pathname:'/area-details',params:{area:x.area}})}><Card style={styles.item}><Text style={styles.name}>{x.area}</Text><RiskBadge level={x.riskLevel}/><Text style={styles.meta}>Risk score {x.riskScore}/100</Text></Card></Pressable>)}</ScrollView>}
-const styles=StyleSheet.create({container:{flex:1,backgroundColor:colors.bg,padding:18,paddingTop:58},title:{color:'#fff',fontSize:28,fontWeight:'900'},search:{flexDirection:'row',alignItems:'center',gap:10,marginVertical:16,padding:12},input:{flex:1,color:'#fff'},item:{marginBottom:12},name:{color:'#fff',fontSize:18,fontWeight:'900',marginBottom:8},meta:{color:colors.muted,marginTop:8}});
+import { Search } from 'lucide-react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { GlassCard } from '../../src/components/GlassCard';
+import { colors } from '../../src/theme';
+
+export default function SearchScreen() {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Search Location</Text>
+      <GlassCard style={styles.searchBox}>
+        <Search color={colors.muted} size={22} />
+        <TextInput placeholder="Dhanmondi, Mirpur, Gulshan..." placeholderTextColor={colors.muted} style={styles.input} />
+      </GlassCard>
+      <Text style={styles.hint}>Search UI ready. Connect it to /crimes?area=name for live area lookup.</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.bg, padding: 18, paddingTop: 60 },
+  title: { color: colors.text, fontSize: 32, fontWeight: '900', marginBottom: 18 },
+  searchBox: { padding: 16, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  input: { flex: 1, color: colors.text, fontSize: 16 },
+  hint: { color: colors.muted, marginTop: 16, lineHeight: 22 },
+});

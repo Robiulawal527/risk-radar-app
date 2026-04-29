@@ -1,4 +1,68 @@
-import {View,Text,TextInput,StyleSheet,Alert,ScrollView,Pressable} from 'react-native'; import {useState} from 'react'; import {Camera,MapPin,Clock} from 'lucide-react-native'; import {api} from '../src/api'; import {colors} from '../src/theme'; import {Card} from '../src/components/Card'; import {PrimaryButton} from '../src/components/PrimaryButton';
-export default function ReportCrime(){const[type,setType]=useState('Theft');const[area,setArea]=useState('Dhanmondi');const[severity,setSeverity]=useState('medium');const[description,setDescription]=useState('');async function submit(){try{await api.post('/crimes/reports',{type,area,severity,description,latitude:23.7465,longitude:90.376});Alert.alert('Submitted','Your report is pending review')}catch{Alert.alert('Saved locally','Backend unavailable')}}return <ScrollView style={styles.container}><Text style={styles.title}>Report Crime</Text><Card><Field label='Crime Type' value={type} setValue={setType}/><Field label='Location' value={area} setValue={setArea} icon={<MapPin color={colors.red} size={18}/>}/><Field label='Time' value='Now' setValue={()=>{}} icon={<Clock color={colors.muted} size={18}/>}/><Text style={styles.label}>Severity</Text><View style={styles.row}>{['low','medium','high'].map(s=><Pressable key={s} onPress={()=>setSeverity(s)} style={[styles.sev,severity===s&&{borderColor:s==='high'?colors.red:s==='medium'?colors.orange:colors.green,backgroundColor:(s==='high'?colors.red:s==='medium'?colors.orange:colors.green)+'22'}]}><Text style={{color:'#fff',fontWeight:'900'}}>{s}</Text></Pressable>)}</View><Text style={styles.label}>Description</Text><TextInput multiline placeholder='Write description...' placeholderTextColor='#758293' value={description} onChangeText={setDescription} style={[styles.input,{height:120,textAlignVertical:'top'}]}/><Text style={styles.label}>Upload Image</Text><View style={styles.upload}><Camera color={colors.muted}/><Text style={{color:colors.muted}}>Optional evidence photo</Text></View><PrimaryButton title='Submit Report' onPress={submit}/></Card></ScrollView>}
-function Field({label,value,setValue,icon}:any){return <><Text style={styles.label}>{label}</Text><View style={styles.inputWrap}><TextInput value={value} onChangeText={setValue} placeholderTextColor='#758293' style={styles.input}/>{icon}</View></>}
-const styles=StyleSheet.create({container:{flex:1,backgroundColor:colors.bg,padding:18,paddingTop:58},title:{color:'#fff',fontSize:28,fontWeight:'900',marginBottom:18},label:{color:'#d9e0e9',fontWeight:'800',marginBottom:8,marginTop:8},inputWrap:{flexDirection:'row',alignItems:'center',backgroundColor:colors.card2,borderColor:colors.border,borderWidth:1,borderRadius:12,paddingRight:12,marginBottom:8},input:{flex:1,color:'#fff',padding:14},row:{flexDirection:'row',gap:10,marginBottom:10},sev:{flex:1,padding:12,borderRadius:12,borderColor:colors.border,borderWidth:1,alignItems:'center'},upload:{height:70,borderRadius:14,borderColor:colors.border,borderWidth:1,backgroundColor:colors.card2,alignItems:'center',justifyContent:'center',gap:6,marginBottom:16}});
+import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
+import { useState } from 'react';
+import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { api } from '../src/api';
+import { GlassCard } from '../src/components/GlassCard';
+import { colors } from '../src/theme';
+
+export default function ReportCrimeScreen() {
+  const [type, setType] = useState('Theft');
+  const [area, setArea] = useState('Dhanmondi');
+  const [severity, setSeverity] = useState<'low' | 'medium' | 'high'>('medium');
+  const [description, setDescription] = useState('');
+
+  async function submit() {
+    try {
+      await api.post('/crimes', { type, area, severity, description, latitude: 23.7465, longitude: 90.376 });
+      Alert.alert('Submitted', 'Crime report stored in MySQL.');
+      router.back();
+    } catch (error) {
+      Alert.alert('Error', 'Could not submit report. Check backend connection.');
+    }
+  }
+
+  return (
+    <LinearGradient colors={['#06111c', '#071827']} style={styles.container}>
+      <Text style={styles.title}>Report Crime</Text>
+      <GlassCard style={styles.form}>
+        <Text style={styles.label}>Crime Type</Text>
+        <TextInput value={type} onChangeText={setType} style={styles.input} placeholderTextColor={colors.muted} />
+        <Text style={styles.label}>Location</Text>
+        <TextInput value={area} onChangeText={setArea} style={styles.input} placeholderTextColor={colors.muted} />
+        <Text style={styles.label}>Severity</Text>
+        <View style={styles.chips}>
+          {(['low', 'medium', 'high'] as const).map((item) => (
+            <Pressable key={item} onPress={() => setSeverity(item)} style={[styles.chip, severity === item && styles.activeChip]}>
+              <Text style={[styles.chipText, severity === item && styles.activeChipText]}>{item.toUpperCase()}</Text>
+            </Pressable>
+          ))}
+        </View>
+        <Text style={styles.label}>Description</Text>
+        <TextInput value={description} onChangeText={setDescription} style={[styles.input, styles.textarea]} multiline placeholder="Write description..." placeholderTextColor={colors.muted} />
+        <Pressable onPress={submit} style={styles.submitWrap}>
+          <LinearGradient colors={['#ff3838', '#c91520']} style={styles.submit}>
+            <Text style={styles.submitText}>Submit Report</Text>
+          </LinearGradient>
+        </Pressable>
+      </GlassCard>
+    </LinearGradient>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 18, paddingTop: 60 },
+  title: { color: colors.text, fontSize: 32, fontWeight: '900', marginBottom: 18 },
+  form: { padding: 18 },
+  label: { color: colors.text, fontSize: 14, fontWeight: '900', marginBottom: 8, marginTop: 12 },
+  input: { backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: colors.border, borderRadius: 14, padding: 14, color: colors.text, fontSize: 16 },
+  textarea: { minHeight: 120, textAlignVertical: 'top' },
+  chips: { flexDirection: 'row', gap: 10 },
+  chip: { flex: 1, paddingVertical: 12, borderRadius: 14, borderWidth: 1, borderColor: colors.border, alignItems: 'center' },
+  activeChip: { backgroundColor: 'rgba(255,43,43,0.18)', borderColor: colors.red },
+  chipText: { color: colors.muted, fontWeight: '900' },
+  activeChipText: { color: colors.red },
+  submitWrap: { marginTop: 22, borderRadius: 16, overflow: 'hidden' },
+  submit: { paddingVertical: 17, alignItems: 'center' },
+  submitText: { color: colors.text, fontSize: 16, fontWeight: '900' },
+});

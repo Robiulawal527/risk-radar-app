@@ -1,3 +1,39 @@
-import {View,Text,StyleSheet,Pressable,Linking,Alert} from 'react-native'; import {Phone,Send,Users,ShieldAlert} from 'lucide-react-native'; import {api} from '../../src/api'; import {colors} from '../../src/theme'; import {Card} from '../../src/components/Card'; import {PrimaryButton} from '../../src/components/PrimaryButton';
-export default function SOS(){async function unsafe(){try{await api.post('/sos',{location:'Current GPS location',message:'I feel unsafe'});Alert.alert('SOS sent','Emergency contacts have been notified')}catch{Alert.alert('SOS sent locally','Backend unavailable')}}return <View style={styles.container}><Text style={styles.title}>SOS</Text><Pressable style={styles.big} onPress={()=>Linking.openURL('tel:999')}><ShieldAlert color='#fff' size={44}/><Text style={styles.sos}>SOS</Text></Pressable><Text style={styles.help}>Your location will be shared with emergency contacts</Text><View style={styles.grid}><Card style={styles.tile}><Phone color='#fff'/><Text style={styles.tileText}>Call 999</Text></Card><Card style={styles.tile}><Send color='#fff'/><Text style={styles.tileText}>Share Location</Text></Card><Card style={styles.tile}><Users color='#fff'/><Text style={styles.tileText}>Alert Contacts</Text></Card></View><PrimaryButton title='I Feel Unsafe' variant='orange' onPress={unsafe}/><Text style={styles.note}>Tap only when you feel unsafe in this area</Text></View>}
-const styles=StyleSheet.create({container:{flex:1,backgroundColor:colors.bg,padding:22,paddingTop:62,alignItems:'center'},title:{color:'#fff',fontSize:28,fontWeight:'900'},big:{width:190,height:190,borderRadius:95,backgroundColor:colors.red,alignItems:'center',justifyContent:'center',marginTop:44,borderWidth:10,borderColor:'rgba(255,43,43,.18)'},sos:{color:'#fff',fontSize:44,fontWeight:'900'},help:{color:'#d7dde5',textAlign:'center',marginVertical:28,fontSize:16},grid:{flexDirection:'row',gap:10,marginBottom:18},tile:{flex:1,alignItems:'center',gap:8,padding:12},tileText:{color:'#fff',fontWeight:'800',textAlign:'center',fontSize:12},note:{color:colors.muted,marginTop:14}});
+import { LinearGradient } from 'expo-linear-gradient';
+import { Phone, Send, Users } from 'lucide-react-native';
+import { Alert, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { colors } from '../../src/theme';
+
+export default function SosScreen() {
+  return (
+    <LinearGradient colors={['#060912', '#071523']} style={styles.container}>
+      <Text style={styles.title}>SOS</Text>
+      <Pressable style={styles.pulse} onPress={() => Linking.openURL('tel:999')}>
+        <LinearGradient colors={['#ff4a4a', '#d31320']} style={styles.sosButton}>
+          <Text style={styles.sosText}>SOS</Text>
+        </LinearGradient>
+      </Pressable>
+      <Text style={styles.subtitle}>Your location will be shared with emergency contacts</Text>
+      <View style={styles.actionRow}>
+        <MiniAction icon={<Phone color={colors.text} size={24} />} label="Call 999" onPress={() => Linking.openURL('tel:999')} />
+        <MiniAction icon={<Send color={colors.text} size={24} />} label="Share" onPress={() => Alert.alert('Shared', 'Location shared')} />
+        <MiniAction icon={<Users color={colors.text} size={24} />} label="Contacts" onPress={() => Alert.alert('Alert', 'Contacts notified')} />
+      </View>
+    </LinearGradient>
+  );
+}
+
+function MiniAction({ icon, label, onPress }: { icon: React.ReactNode; label: string; onPress: () => void }) {
+  return <Pressable style={styles.mini} onPress={onPress}>{icon}<Text style={styles.miniText}>{label}</Text></Pressable>;
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 22 },
+  title: { color: colors.text, fontSize: 34, fontWeight: '900', marginBottom: 28 },
+  pulse: { width: 224, height: 224, borderRadius: 112, backgroundColor: 'rgba(255,43,43,0.12)', alignItems: 'center', justifyContent: 'center', borderWidth: 22, borderColor: 'rgba(255,43,43,0.08)' },
+  sosButton: { width: 158, height: 158, borderRadius: 79, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'rgba(255,255,255,0.35)' },
+  sosText: { color: colors.text, fontSize: 44, fontWeight: '900' },
+  subtitle: { color: colors.muted, textAlign: 'center', marginTop: 28, marginBottom: 24, fontSize: 16 },
+  actionRow: { flexDirection: 'row', gap: 12 },
+  mini: { width: 96, height: 92, borderRadius: 20, backgroundColor: colors.glassStrong, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border },
+  miniText: { color: colors.text, fontWeight: '800', marginTop: 7 },
+});

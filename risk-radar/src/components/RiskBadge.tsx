@@ -1,3 +1,24 @@
-import React from 'react'; import {Text,StyleSheet} from 'react-native'; import {colors} from '../theme';
-export function RiskBadge({level}:{level:string}){const c=level?.includes('High')?colors.red:level?.includes('Medium')?colors.orange:colors.green;return <Text style={[styles.badge,{color:c,backgroundColor:c+'22'}]}>{level}</Text>}
-const styles=StyleSheet.create({badge:{paddingHorizontal:12,paddingVertical:7,borderRadius:10,fontWeight:'900',overflow:'hidden'}});
+import { Text, StyleSheet, View } from 'react-native';
+import { riskColor, riskLabel } from '../theme';
+
+export function RiskBadge({ score }: { score: number }) {
+  const color = riskColor(score);
+  return (
+    <View style={[styles.badge, { backgroundColor: `${color}22`, borderColor: `${color}77` }]}>
+      <Text style={[styles.text, { color }]}>{riskLabel(score)}</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  badge: {
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  text: {
+    fontSize: 14,
+    fontWeight: '900',
+  },
+});

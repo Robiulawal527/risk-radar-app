@@ -1,68 +1,61 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  ImageBackground,
-  Pressable,
-} from "react-native";
-import { router } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
-import { ShieldCheck } from "lucide-react-native";
-import { colors } from "../src/theme";
-import { PrimaryButton } from "../src/components/PrimaryButton";
-export default function Welcome() {
+import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
+import { ShieldCheck } from 'lucide-react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { colors, radius } from '../src/theme';
+
+export default function WelcomeScreen() {
   return (
-    <ImageBackground
-      source={{
-        uri: "https://images.unsplash.com/photo-1519501025264-65ba15a82390?q=80&w=1200",
-      }}
-      style={{ flex: 1 }}
-    >
-      <LinearGradient
-        colors={["rgba(3,10,18,.55)", colors.bg]}
-        style={styles.container}
-      >
-        <View style={styles.logo}>
-          <ShieldCheck size={96} color={colors.red} />
-        </View>
-        <Text style={styles.title}>
-          Risk <Text style={{ color: colors.red }}>Radar</Text>
-        </Text>
-        <Text style={styles.subtitle}>
-          See the risk. Avoid the danger. Stay ahead.
-        </Text>
-        <PrimaryButton
-          title="Get Started"
-          onPress={() => router.push("/login")}
-        />
-        <Pressable onPress={() => router.replace("/(tabs)/map")}>
-          <Text style={styles.guest}>Continue as Guest</Text>
-        </Pressable>
-      </LinearGradient>
-    </ImageBackground>
+    <LinearGradient colors={['#020914', '#06111c', '#071523']} style={styles.container}>
+      <View style={styles.glow} />
+      <View style={styles.logoRing}>
+        <ShieldCheck color={colors.red} size={98} strokeWidth={1.5} />
+      </View>
+
+      <Text style={styles.title}>
+        Risk <Text style={styles.red}>Radar</Text>
+      </Text>
+      <Text style={styles.subtitle}>See the risk. Avoid the danger. Stay ahead.</Text>
+
+      <Pressable style={styles.button} onPress={() => router.replace('/(tabs)/map')}>
+        <LinearGradient colors={['#ff3838', '#d71920']} style={styles.buttonGradient}>
+          <Text style={styles.buttonText}>Get Started</Text>
+        </LinearGradient>
+      </Pressable>
+
+      <Pressable onPress={() => router.replace('/(tabs)/map')}>
+        <Text style={styles.guest}>Continue as Guest</Text>
+      </Pressable>
+    </LinearGradient>
   );
 }
+
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", padding: 28 },
-  logo: { alignItems: "center", marginBottom: 24 },
-  title: {
-    color: "#fff",
-    fontSize: 46,
-    fontWeight: "900",
-    textAlign: "center",
+  container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 26 },
+  glow: {
+    position: 'absolute',
+    top: 95,
+    width: 260,
+    height: 260,
+    borderRadius: 130,
+    backgroundColor: 'rgba(255,43,43,0.12)',
   },
-  subtitle: {
-    color: "#d6dbe2",
-    textAlign: "center",
-    fontSize: 16,
-    lineHeight: 24,
-    marginTop: 12,
-    marginBottom: 72,
+  logoRing: {
+    width: 178,
+    height: 178,
+    borderRadius: 90,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,43,43,0.25)',
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    marginBottom: 32,
   },
-  guest: {
-    color: colors.muted,
-    textAlign: "center",
-    marginTop: 24,
-    fontWeight: "700",
-  },
+  title: { color: colors.text, fontSize: 44, fontWeight: '900', letterSpacing: -1 },
+  red: { color: colors.red },
+  subtitle: { color: colors.muted, fontSize: 16, textAlign: 'center', marginTop: 10, marginBottom: 72 },
+  button: { width: '100%', borderRadius: radius.md, overflow: 'hidden' },
+  buttonGradient: { paddingVertical: 17, alignItems: 'center', borderRadius: radius.md },
+  buttonText: { color: colors.text, fontSize: 17, fontWeight: '900' },
+  guest: { color: colors.muted, fontSize: 15, marginTop: 22, fontWeight: '700' },
 });
