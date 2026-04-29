@@ -1,56 +1,13 @@
-const router = require("express").Router();
-const db = require("../db");
-
-router.get("/", async (req, res) => {
-  try {
-    const [rows] = await db.query("SELECT * FROM crimes ORDER BY created_at DESC");
-    res.json(rows);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to fetch crimes", error });
-  }
-});
-
-router.post("/", async (req, res) => {
-  try {
-    const { type, area, latitude, longitude, severity, description } = req.body;
-
-    await db.query(
-      `INSERT INTO crimes 
-      (type, area, latitude, longitude, severity, description) 
-      VALUES (?, ?, ?, ?, ?, ?)`,
-      [type, area, latitude, longitude, severity, description]
-    );
-
-    res.json({ message: "Crime report submitted" });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to submit crime", error });
-  }
-});
-
-router.get("/area/:area", async (req, res) => {
-  try {
-    const area = req.params.area;
-
-    const [rows] = await db.query("SELECT * FROM crimes WHERE area = ?", [
-      area,
-    ]);
-
-    const riskScore = Math.min(100, rows.length * 12);
-
-    let riskLevel = "Low Risk";
-
-    if (riskScore >= 70) riskLevel = "High Risk";
-    else if (riskScore >= 40) riskLevel = "Medium Risk";
-
-    res.json({
-      area,
-      riskScore,
-      riskLevel,
-      crimes: rows,
-    });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to fetch area data", error });
-  }
-});
-
-module.exports = router;
+const router=require('express').Router(); const store=require('../services/dataStore');
+router.get('/summary',(_,res)=>res.json(store.summary()));
+router.get('/areas',(_,res)=>res.json(store.buildAreas()));
+router.get('/heatmap',(_,res)=>res.json(store.heatmap()));
+router.get('/area/:name',(req,res)=>res.json(store.areaDetails(req.params.name)));
+router.get('/route',(req,res)=>res.json(store.route(req.query.from,req.query.to)));
+router.get('/reports',(_,res)=>res.json(store.reports));
+router.post('/reports',(req,res)=>res.status(201).json(store.addReport(req.body)));
+router.get('/criminals',(_,res)=>res.json([
+{id:1,name:'Unknown Gang A',area:'Dhanmondi',riskScore:92,cases:18,category:'Robbery',status:'Wanted'},
+{id:2,name:'Snatching Group B',area:'Mirpur 10',riskScore:88,cases:14,category:'Theft',status:'Under Watch'},
+{id:3,name:'Narcotics Ring C',area:'Gazipur Sadar',riskScore:81,cases:11,category:'Narcotics',status:'Wanted'}]));
+module.exports=router;

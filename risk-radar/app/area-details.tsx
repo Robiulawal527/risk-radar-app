@@ -1,79 +1,113 @@
-import { View, Text, Pressable, StyleSheet } from "react-native";
-import { router, useLocalSearchParams } from "expo-router";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { useLocalSearchParams, router } from "expo-router";
+import { useEffect, useState } from "react";
+import MapView, { Polygon } from "react-native-maps";
+import { Share2 } from "lucide-react-native";
+import { safeGet } from "../src/api";
 import { colors } from "../src/theme";
-
-export default function AreaDetailsScreen() {
-  const { area = "Mirpur 10" } = useLocalSearchParams();
-
+import { Card } from "../src/components/Card";
+import { RiskBadge } from "../src/components/RiskBadge";
+import { PrimaryButton } from "../src/components/PrimaryButton";
+export default function AreaDetails() {
+  const { area = "Dhanmondi" } = useLocalSearchParams();
+  const [d, setD] = useState<any>(null);
+  useEffect(() => {
+    safeGet(`/crimes/area/${area}`, null).then(setD);
+  }, [area]);
+  const lat = d?.latitude || 23.7465,
+    lng = d?.longitude || 90.376;
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{area}</Text>
-      <Text style={styles.badge}>Medium Risk</Text>
-
-      <Text style={styles.label}>Risk Score</Text>
-      <Text style={styles.score}>65 / 100</Text>
-
-      <Text style={styles.heading}>Recent Crimes</Text>
-
-      <Text style={styles.item}>🟢 Theft — 8:30 PM</Text>
-      <Text style={styles.item}>🔴 Robbery — 10:15 PM</Text>
-      <Text style={styles.item}>🟠 Harassment — 7:00 PM</Text>
-
-      <Pressable style={styles.button} onPress={() => router.push("/dashboard")}>
-        <Text style={styles.buttonText}>View Full Report</Text>
-      </Pressable>
-    </View>
+    <ScrollView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.back} onPress={() => router.back()}>
+          ‹
+        </Text>
+        <Text style={styles.title}>Area Details</Text>
+        <Share2 color="#fff" />
+      </View>
+      <MapView
+        style={styles.map}
+        initialRegion={{
+          latitude: lat,
+          longitude: lng,
+          latitudeDelta: 0.035,
+          longitudeDelta: 0.035,
+        }}
+      >
+        <Polygon
+          coordinates={[
+            { latitude: lat + 0.012, longitude: lng - 0.014 },
+            { latitude: lat + 0.018, longitude: lng + 0.012 },
+            { latitude: lat - 0.005, longitude: lng + 0.018 },
+            { latitude: lat - 0.018, longitude: lng - 0.008 },
+          ]}
+          fillColor="rgba(255,43,43,.22)"
+          strokeColor={colors.red}
+          strokeWidth={2}
+        />
+      </MapView>
+      <Card style={{ margin: 16, marginTop: -26 }}>
+        <View style={styles.row}>
+          <Text style={styles.area}>{d?.area || area}</Text>
+          <RiskBadge level={d?.riskLevel || "Medium Risk"} />
+        </View>
+        <Text style={styles.label}>Risk Score</Text>
+        <Text style={styles.score}>
+          {d?.riskScore || 65}
+          <Text style={styles.out}> /100</Text>
+        </Text>
+        <Text style={styles.heading}>Recent Crimes</Text>
+        {(d?.recentCrimes || []).map((c: any) => (
+          <View key={c.id} style={styles.crime}>
+            <Text style={{ color: "#fff", fontWeight: "900" }}>{c.type}</Text>
+            <Text style={{ color: colors.muted }}>
+              {c.count} cases • {c.time}
+            </Text>
+          </View>
+        ))}
+        <PrimaryButton
+          title="View Full Report"
+          onPress={() => router.push("/(tabs)/dashboard")}
+        />
+      </Card>
+    </ScrollView>
   );
 }
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.bg,
-    padding: 24,
-    paddingTop: 70,
+  container: { flex: 1, backgroundColor: colors.bg },
+  header: {
+    height: 88,
+    paddingTop: 46,
+    paddingHorizontal: 18,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
-  title: {
-    color: colors.text,
-    fontSize: 32,
-    fontWeight: "900",
+  back: { fontSize: 42, color: "#fff" },
+  title: { color: "#fff", fontWeight: "900", fontSize: 18 },
+  map: { height: 260 },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
-  badge: {
-    color: colors.orange,
-    marginVertical: 16,
-    fontWeight: "900",
-  },
-  label: {
-    color: colors.muted,
-  },
-  score: {
-    color: colors.orange,
-    fontSize: 36,
-    fontWeight: "900",
-    marginBottom: 25,
-  },
+  area: { color: "#fff", fontSize: 28, fontWeight: "900" },
+  label: { color: colors.muted, marginTop: 14 },
+  score: { color: colors.orange, fontSize: 36, fontWeight: "900" },
+  out: { color: colors.muted, fontSize: 18 },
   heading: {
-    color: colors.text,
-    fontSize: 20,
+    color: "#fff",
+    fontSize: 18,
     fontWeight: "900",
-    marginBottom: 14,
-  },
-  item: {
-    color: colors.text,
-    backgroundColor: colors.card,
-    padding: 14,
-    borderRadius: 12,
+    marginTop: 16,
     marginBottom: 10,
   },
-  button: {
-    backgroundColor: colors.red,
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 20,
-  },
-  buttonText: {
-    color: "#fff",
-    textAlign: "center",
-    fontWeight: "900",
+  crime: {
+    backgroundColor: colors.card2,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
 });
