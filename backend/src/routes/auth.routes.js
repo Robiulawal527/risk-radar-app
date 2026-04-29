@@ -1,4 +1,84 @@
-const router=require('express').Router(); const bcrypt=require('bcryptjs'); const jwt=require('jsonwebtoken'); const {users}=require('../services/dataStore'); const {v4:uuid}=require('uuid');
-router.post('/register',async(req,res)=>{ const {name,email,password,role='user'}=req.body; if(users.find(u=>u.email===email)) return res.status(409).json({message:'Email already exists'}); const user={id:uuid(),name,email,password:await bcrypt.hash(password,10),role}; users.push(user); res.json({message:'Registered',user:{id:user.id,name,email,role}}); });
-router.post('/login',async(req,res)=>{ const {email,password}=req.body; const user=users.find(u=>u.email===email); if(!user) return res.status(401).json({message:'Invalid email'}); const ok=await bcrypt.compare(password,user.password); if(!ok) return res.status(401).json({message:'Invalid password'}); const token=jwt.sign({id:user.id,role:user.role},process.env.JWT_SECRET||'risk_secret',{expiresIn:'7d'}); res.json({token,user:{id:user.id,name:user.name,email:user.email,role:user.role}}); });
-module.exports=router;
+const router = require("express").Router();
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const db = require("../db");
+
+router.post("/register", async (req, res) => {
+  try {
+    const { name, email, password, role = "user" } = req.body;
+
+    const hashed = await bcrypt.hash(password, 10);
+
+    const [result] = await db.query(
+      `
+      INSERT INTO users (name, email, password, role)
+      VALUES (?, ?, ?, ?)
+      `,
+      [name, email, hashed, role]
+    );
+
+    res.json({
+      message: "User registered successfully",
+      userId: result.insertId,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Registration failed",
+      error: error.message,
+    });
+  }
+});
+
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const [rows] = await db.query("SELECT * FROM users WHERE email = ?", [
+      email,
+    ]);
+
+    const user = rows[0];
+
+    if (!user) {
+      return res.status(401).json({
+        message: "Invalid email",
+      });
+    }
+
+    const ok = await bcrypt.compare(password, user.password);
+
+    if (!ok) {
+      return res.status(401).json({
+        message: "Invalid password",
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        id: user.id,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
+
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Login failed",
+      error: error.message,
+    });
+  }
+});
+
+module.exports = router;
