@@ -1,31 +1,137 @@
-import { ChevronRight, LogOut, MapPin, Settings, Shield, UserRound } from 'lucide-react-native';
-import { StyleSheet, Text, View } from 'react-native';
+import type { ReactNode } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
+import { Bell, ChevronRight, MapPinned, Shield, Siren, UserRound } from 'lucide-react-native';
+import { useEffect, useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActionButton } from '../../src/components/ActionButton';
+import { AppleHeader } from '../../src/components/AppleHeader';
 import { GlassCard } from '../../src/components/GlassCard';
-import { colors } from '../../src/theme';
+import { Screen } from '../../src/components/Screen';
+import { colors, radii } from '../../src/theme';
+
+type User = {
+  name?: string;
+  email?: string;
+  role?: string;
+};
 
 export default function ProfileScreen() {
-  const items = ['My Reports', 'My Alerts', 'Saved Locations', 'Emergency Contacts', 'Settings'];
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    AsyncStorage.getItem('user').then((value) => {
+      if (value) setUser(JSON.parse(value));
+    });
+  }, []);
+
+  async function logout() {
+    await AsyncStorage.multiRemove(['token', 'user']);
+    router.replace('/');
+  }
+
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.avatar}><UserRound color={colors.text} size={36} /></View>
-        <View><Text style={styles.name}>Ahmed Rahman</Text><Text style={styles.email}>ahmed@gmail.com</Text></View>
-      </View>
-      <GlassCard style={styles.menu}>
-        {items.map((item, index) => <View key={item} style={styles.row}>{index === 0 ? <Shield color={colors.muted} size={21} /> : index === 2 ? <MapPin color={colors.muted} size={21} /> : <Settings color={colors.muted} size={21} />}<Text style={styles.rowText}>{item}</Text><ChevronRight color={colors.muted} size={20} /></View>)}
-        <View style={styles.row}><LogOut color={colors.red} size={21} /><Text style={[styles.rowText, { color: colors.red }]}>Logout</Text></View>
+    <Screen>
+      <AppleHeader eyebrow="Private profile" title="Account" subtitle="Manage your safety identity, saved zones, and emergency actions." />
+
+      <GlassCard style={styles.profileCard}>
+        <View style={styles.avatar}>
+          <UserRound color={colors.white} size={42} />
+        </View>
+        <Text style={styles.name}>{user?.name || 'Guest User'}</Text>
+        <Text style={styles.email}>{user?.email || 'guest@riskradar.local'}</Text>
+        <View style={styles.rolePill}>
+          <Shield color={colors.green} size={14} />
+          <Text style={styles.roleText}>{user?.role || 'user'}</Text>
+        </View>
       </GlassCard>
-    </View>
+
+      <GlassCard style={styles.menuCard}>
+        <MenuItem icon={<MapPinned color={colors.cyan} size={20} />} title="Saved safe locations" />
+        <MenuItem icon={<Bell color={colors.orange} size={20} />} title="Alert preferences" />
+        <MenuItem icon={<Siren color={colors.red} size={20} />} title="Emergency contacts" />
+      </GlassCard>
+
+      <ActionButton title="Sign out" variant="dark" onPress={logout} style={styles.logout} />
+    </Screen>
+  );
+}
+
+function MenuItem({ icon, title }: { icon: ReactNode; title: string }) {
+  return (
+    <Pressable style={styles.menuItem}>
+      <View style={styles.menuIcon}>{icon}</View>
+      <Text style={styles.menuTitle}>{title}</Text>
+      <ChevronRight color={colors.soft} size={18} />
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.bg, padding: 18, paddingTop: 60 },
-  header: { flexDirection: 'row', gap: 14, alignItems: 'center', marginBottom: 24 },
-  avatar: { width: 70, height: 70, borderRadius: 35, backgroundColor: colors.glassStrong, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border },
-  name: { color: colors.text, fontSize: 20, fontWeight: '900' },
-  email: { color: colors.muted, marginTop: 3 },
-  menu: { padding: 6 },
-  row: { minHeight: 58, flexDirection: 'row', alignItems: 'center', gap: 13, paddingHorizontal: 14, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.06)' },
-  rowText: { color: colors.text, fontSize: 16, fontWeight: '800', flex: 1 },
+  profileCard: {
+    alignItems: 'center',
+  },
+  avatar: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: 'rgba(10,132,255,0.24)',
+    borderWidth: 1,
+    borderColor: 'rgba(100,210,255,0.36)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  name: {
+    color: colors.text,
+    fontSize: 26,
+    fontWeight: '900',
+  },
+  email: {
+    color: colors.muted,
+    marginTop: 6,
+  },
+  rolePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: radii.pill,
+    marginTop: 14,
+    backgroundColor: 'rgba(50,215,75,0.13)',
+    borderWidth: 1,
+    borderColor: 'rgba(50,215,75,0.3)',
+  },
+  roleText: {
+    color: colors.green,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    fontSize: 12,
+  },
+  menuCard: {
+    marginTop: 16,
+  },
+  menuItem: {
+    minHeight: 58,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  menuIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  menuTitle: {
+    color: colors.text,
+    flex: 1,
+    fontWeight: '800',
+  },
+  logout: {
+    marginTop: 18,
+  },
 });

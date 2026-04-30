@@ -1,61 +1,189 @@
+import type { ReactNode } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { ShieldCheck } from 'lucide-react-native';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, radius } from '../src/theme';
+import { ShieldCheck, Sparkles, Map, BellRing } from 'lucide-react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { ActionButton } from '../src/components/ActionButton';
+import { GlassCard } from '../src/components/GlassCard';
+import { Screen } from '../src/components/Screen';
+import { colors, radii } from '../src/theme';
 
-export default function WelcomeScreen() {
+export default function LandingScreen() {
   return (
-    <LinearGradient colors={['#020914', '#06111c', '#071523']} style={styles.container}>
-      <View style={styles.glow} />
-      <View style={styles.logoRing}>
-        <ShieldCheck color={colors.red} size={98} strokeWidth={1.5} />
-      </View>
-
-      <Text style={styles.title}>
-        Risk <Text style={styles.red}>Radar</Text>
-      </Text>
-      <Text style={styles.subtitle}>See the risk. Avoid the danger. Stay ahead.</Text>
-
-      <Pressable style={styles.button} onPress={() => router.replace('/(tabs)/map')}>
-        <LinearGradient colors={['#ff3838', '#d71920']} style={styles.buttonGradient}>
-          <Text style={styles.buttonText}>Get Started</Text>
+    <Screen scroll={false}>
+      <View style={styles.hero}>
+        <LinearGradient
+          colors={['rgba(255,59,48,0.92)', 'rgba(191,90,242,0.75)', 'rgba(10,132,255,0.78)']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.logoOrb}
+        >
+          <ShieldCheck color="#fff" size={68} strokeWidth={1.7} />
         </LinearGradient>
-      </Pressable>
 
-      <Pressable onPress={() => router.replace('/(tabs)/map')}>
-        <Text style={styles.guest}>Continue as Guest</Text>
-      </Pressable>
-    </LinearGradient>
+        <Text style={styles.brand}>Risk Radar</Text>
+        <Text style={styles.tagline}>See the risk. Avoid the danger. Stay ahead.</Text>
+
+        <GlassCard style={styles.previewCard}>
+          <View style={styles.previewTop}>
+            <View>
+              <Text style={styles.previewLabel}>Live Safety Intelligence</Text>
+              <Text style={styles.previewTitle}>Dhaka Risk Pulse</Text>
+            </View>
+            <View style={styles.livePill}>
+              <View style={styles.liveDot} />
+              <Text style={styles.liveText}>LIVE</Text>
+            </View>
+          </View>
+
+          <View style={styles.riskMeter}>
+            <LinearGradient colors={[colors.green, colors.orange, colors.red]} style={styles.riskFill} />
+            <View style={styles.riskNeedle} />
+          </View>
+
+          <View style={styles.previewStats}>
+            <Mini icon={<Map color={colors.cyan} size={18} />} label="Heatmap" />
+            <Mini icon={<BellRing color={colors.orange} size={18} />} label="Alerts" />
+            <Mini icon={<Sparkles color={colors.purple} size={18} />} label="AI Risk" />
+          </View>
+        </GlassCard>
+
+        <ActionButton title="Enter Risk Radar" onPress={() => router.replace('/(tabs)/map')} />
+        <ActionButton title="Sign in" variant="dark" onPress={() => router.push('/login')} style={styles.secondary} />
+      </View>
+    </Screen>
+  );
+}
+
+function Mini({ icon, label }: { icon: ReactNode; label: string }) {
+  return (
+    <View style={styles.mini}>
+      {icon}
+      <Text style={styles.miniText}>{label}</Text>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 26 },
-  glow: {
-    position: 'absolute',
-    top: 95,
-    width: 260,
-    height: 260,
-    borderRadius: 130,
-    backgroundColor: 'rgba(255,43,43,0.12)',
-  },
-  logoRing: {
-    width: 178,
-    height: 178,
-    borderRadius: 90,
+  hero: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,43,43,0.25)',
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    marginBottom: 32,
+    paddingHorizontal: 4,
   },
-  title: { color: colors.text, fontSize: 44, fontWeight: '900', letterSpacing: -1 },
-  red: { color: colors.red },
-  subtitle: { color: colors.muted, fontSize: 16, textAlign: 'center', marginTop: 10, marginBottom: 72 },
-  button: { width: '100%', borderRadius: radius.md, overflow: 'hidden' },
-  buttonGradient: { paddingVertical: 17, alignItems: 'center', borderRadius: radius.md },
-  buttonText: { color: colors.text, fontSize: 17, fontWeight: '900' },
-  guest: { color: colors.muted, fontSize: 15, marginTop: 22, fontWeight: '700' },
+  logoOrb: {
+    width: 142,
+    height: 142,
+    borderRadius: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+    shadowColor: colors.red,
+    shadowOpacity: 0.45,
+    shadowRadius: 34,
+    shadowOffset: { width: 0, height: 18 },
+  },
+  brand: {
+    color: colors.text,
+    fontSize: 52,
+    fontWeight: '900',
+    letterSpacing: -2.2,
+  },
+  tagline: {
+    color: colors.muted,
+    textAlign: 'center',
+    fontSize: 17,
+    marginTop: 10,
+    marginBottom: 28,
+    maxWidth: 320,
+    lineHeight: 24,
+  },
+  previewCard: {
+    width: '100%',
+    marginBottom: 24,
+  },
+  previewTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  previewLabel: {
+    color: colors.cyan,
+    fontSize: 12,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  previewTitle: {
+    color: colors.text,
+    fontSize: 26,
+    fontWeight: '900',
+    marginTop: 4,
+  },
+  livePill: {
+    flexDirection: 'row',
+    gap: 7,
+    alignItems: 'center',
+    borderRadius: radii.pill,
+    backgroundColor: 'rgba(50,215,75,0.16)',
+    borderWidth: 1,
+    borderColor: 'rgba(50,215,75,0.42)',
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+  liveDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: colors.green,
+  },
+  liveText: {
+    color: colors.green,
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  riskMeter: {
+    height: 12,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    marginTop: 22,
+    overflow: 'hidden',
+  },
+  riskFill: {
+    flex: 1,
+  },
+  riskNeedle: {
+    position: 'absolute',
+    right: '21%',
+    top: -5,
+    width: 4,
+    height: 22,
+    borderRadius: 2,
+    backgroundColor: colors.white,
+  },
+  previewStats: {
+    flexDirection: 'row',
+    marginTop: 18,
+    gap: 10,
+  },
+  mini: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    minHeight: 76,
+    borderRadius: radii.md,
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 1,
+    borderColor: colors.stroke,
+  },
+  miniText: {
+    color: colors.muted,
+    fontWeight: '800',
+    fontSize: 12,
+  },
+  secondary: {
+    marginTop: 12,
+    width: '100%',
+  },
 });

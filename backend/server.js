@@ -28,3 +28,10 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Risk Radar backend running on port ${PORT}`);
 });
+
+
+// Add near your other route imports in backend/server.js:
+const predictionRoutes = require('./src/routes/prediction.routes');
+
+// Add near your other app.use lines in backend/server.js:
+app.use('/api/prediction', predictionRoutes);
