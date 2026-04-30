@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
-    "import:csv": "node scripts/importCsvToMysql.js"
+    "import:csv": "node scripts/importCsvToMysql.js",
+    "generate:dhaka": "node scripts/generateDhakaDummyCrimes.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -19,5 +20,14 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.4"
-  }
+  },
+
+  "scripts": {
+  "dev": "nodemon server.js",
+  "start": "node server.js",
+  "import:csv": "node scripts/importCsvToMysql.js",
+  "generate:dhaka": "node scripts/generateDhakaDummyCrimes.js"
+}
+
+  
 }
