@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { ReactNode } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../theme';
 
@@ -39,6 +39,9 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 20,
     paddingTop: 10,
+    width: '100%',
+    maxWidth: Platform.OS === 'web' ? 1180 : undefined,
+    alignSelf: 'center',
   },
   contentFill: {
     flex: 1,

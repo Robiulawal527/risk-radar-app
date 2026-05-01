@@ -1,4 +1,5 @@
 import { MapPin, Send, ShieldAlert } from 'lucide-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { api, getErrorMessage } from '../../src/api';
@@ -28,7 +29,10 @@ export default function ReportCrimeScreen() {
   async function submit() {
     try {
       setLoading(true);
+      const rawUser = await AsyncStorage.getItem('user');
+      const user = rawUser ? JSON.parse(rawUser) : null;
       await api.post('/crimes', {
+        user_id: user?.id || null,
         type,
         area,
         division: 'Dhaka',

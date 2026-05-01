@@ -5,7 +5,9 @@ import { Platform } from 'react-native';
 // Find it on Mac with: ipconfig getifaddr en0
 const LAN_IP = '192.168.0.103';
 
-export const API_URL = Platform.OS === 'web' ? 'http://localhost:5000/api' : `http://${LAN_IP}:5000/api`;
+const envApiUrl = process.env.EXPO_PUBLIC_API_URL;
+const defaultApiUrl = Platform.OS === 'web' ? 'http://localhost:5000/api' : `http://${LAN_IP}:5000/api`;
+export const API_URL = envApiUrl || defaultApiUrl;
 
 export const api = axios.create({
   baseURL: API_URL,

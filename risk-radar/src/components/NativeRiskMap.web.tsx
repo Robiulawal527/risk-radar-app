@@ -1,4 +1,6 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import 'leaflet/dist/leaflet.css';
+import { Circle, MapContainer, TileLayer, Tooltip } from 'react-leaflet';
+import { StyleSheet, Text, View } from 'react-native';
 import type { HeatmapArea, LatLng } from '../types';
 import { colors, radii, riskColor } from '../theme';
 
@@ -9,40 +11,53 @@ type Props = {
 };
 
 export function NativeRiskMap({ zones, userLocation, onSelectArea }: Props) {
-  const topZones = [...zones].sort((a, b) => Number(b.riskScore) - Number(a.riskScore)).slice(0, 9);
+  const visibleZones = zones.filter((item) => Number.isFinite(item.latitude) && Number.isFinite(item.longitude)).slice(0, 150);
 
   return (
     <View style={styles.mapWeb}>
-      <View style={styles.grid}>
-        {topZones.map((zone) => {
-          const size = Math.max(58, Math.min(136, Number(zone.riskScore) * 1.35));
+      <MapContainer
+        center={[userLocation.latitude, userLocation.longitude]}
+        zoom={12}
+        scrollWheelZoom
+        style={styles.leafletMap as any}
+      >
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors" />
+
+        {visibleZones.map((zone) => {
+          const score = Number(zone.riskScore) || 0;
+          const color = riskColor(score);
+          const radius = Math.max(220, Math.min(1300, score * 16 + 220));
           return (
-            <Pressable
-              key={zone.area}
-              onPress={() => onSelectArea(zone)}
-              style={[
-                styles.bubble,
-                {
-                  width: size,
-                  height: size,
-                  borderRadius: size / 2,
-                  borderColor: riskColor(Number(zone.riskScore)),
-                  backgroundColor: `${riskColor(Number(zone.riskScore))}28`,
-                },
-              ]}
+            <Circle
+              key={`${zone.area}-${zone.latitude}-${zone.longitude}`}
+              center={[zone.latitude, zone.longitude]}
+              radius={radius}
+              pathOptions={{
+                color,
+                fillColor: color,
+                fillOpacity: score >= 70 ? 0.34 : score >= 40 ? 0.24 : 0.17,
+                weight: 1.4,
+              }}
+              eventHandlers={{
+                click: () => onSelectArea(zone),
+              }}
             >
-              <Text style={styles.score}>{Math.round(Number(zone.riskScore))}</Text>
-              <Text numberOfLines={1} style={styles.area}>
-                {zone.area}
-              </Text>
-            </Pressable>
+              <Tooltip direction="top" sticky>
+                <div>
+                  <strong>{zone.area}</strong>
+                  <br />
+                  Risk {Math.round(score)}/100
+                </div>
+              </Tooltip>
+            </Circle>
           );
         })}
-      </View>
+      </MapContainer>
+
       <View style={styles.footer}>
-        <Text style={styles.footerTitle}>Web heatmap preview</Text>
+        <Text style={styles.footerTitle}>Live web heatmap</Text>
         <Text style={styles.footerText}>
-          Mobile uses native maps. Current center: {userLocation.latitude.toFixed(3)}, {userLocation.longitude.toFixed(3)}
+          Interactive zone intensity is now plotted over OpenStreetMap. Click any hotspot to select the area.
         </Text>
       </View>
     </View>
@@ -52,32 +67,11 @@ export function NativeRiskMap({ zones, userLocation, onSelectArea }: Props) {
 const styles = StyleSheet.create({
   mapWeb: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#09111f',
-    padding: 20,
-    justifyContent: 'center',
+    backgroundColor: '#07101f',
   },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 16,
-  },
-  bubble: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-  },
-  score: {
-    color: colors.text,
-    fontSize: 24,
-    fontWeight: '900',
-  },
-  area: {
-    color: colors.muted,
-    maxWidth: 96,
-    fontSize: 12,
-    marginTop: 4,
+  leafletMap: {
+    height: '100%',
+    width: '100%',
   },
   footer: {
     position: 'absolute',
@@ -86,9 +80,9 @@ const styles = StyleSheet.create({
     right: 20,
     padding: 16,
     borderRadius: radii.lg,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(9,16,34,0.86)',
     borderWidth: 1,
-    borderColor: colors.stroke,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
   footerTitle: {
     color: colors.text,

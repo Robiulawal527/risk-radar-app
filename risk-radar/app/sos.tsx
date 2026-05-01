@@ -6,8 +6,25 @@ import { ActionButton } from '../src/components/ActionButton';
 import { GlassCard } from '../src/components/GlassCard';
 import { Screen } from '../src/components/Screen';
 import { colors, radii } from '../src/theme';
+import { getCurrentLocation } from '../src/location';
+import { api } from '../src/api';
 
 export default function SosScreen() {
+  const handleSOS = async () => {
+    try {
+      Alert.alert('Sending SOS', 'Notifying emergency contacts...');
+      const location = await getCurrentLocation();
+      await api.post('/sos', {
+        user_id: 1, // Default user ID for now, in a real app this comes from auth
+        latitude: location?.latitude,
+        longitude: location?.longitude,
+      });
+      Alert.alert('Alert sent', 'Emergency contacts and authorities have been notified.');
+    } catch (error) {
+      Alert.alert('Failed', 'Could not send SOS alert. Please call 999 directly.');
+    }
+  };
+
   return (
     <Screen scroll={false}>
       <Pressable onPress={() => router.back()} style={styles.backButton}>
@@ -22,7 +39,7 @@ export default function SosScreen() {
 
         <GlassCard style={styles.card}>
           <ActionButton title="Call 999" icon={<PhoneCall color="#fff" size={18} />} onPress={() => Linking.openURL('tel:999')} />
-          <ActionButton title="Notify trusted contacts" variant="dark" icon={<Send color="#fff" size={18} />} onPress={() => Alert.alert('Alert sent', 'Emergency contacts will be notified in the production version.')} style={styles.second} />
+          <ActionButton title="Notify trusted contacts" variant="dark" icon={<Send color="#fff" size={18} />} onPress={handleSOS} style={styles.second} />
         </GlassCard>
       </View>
     </Screen>

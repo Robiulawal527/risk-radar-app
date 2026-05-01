@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { BellRing, LocateFixed, Navigation, RefreshCw, ShieldAlert } from 'lucide-react-native';
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { api } from '../../src/api';
 import { ActionButton } from '../../src/components/ActionButton';
 import { GlassCard } from '../../src/components/GlassCard';
@@ -162,9 +162,10 @@ const styles = StyleSheet.create({
   },
   topHud: {
     position: 'absolute',
-    top: 58,
-    left: 16,
-    right: 16,
+    top: Platform.OS === 'web' ? 96 : 58,
+    left: Platform.OS === 'web' ? 24 : 16,
+    right: Platform.OS === 'web' ? 24 : 16,
+    ...(Platform.OS === 'web' ? { maxWidth: 980, alignSelf: 'center', width: '100%' } : null),
   },
   hudCard: {
     borderRadius: 30,
@@ -202,9 +203,10 @@ const styles = StyleSheet.create({
   },
   bottomPanel: {
     position: 'absolute',
-    left: 14,
-    right: 14,
-    bottom: 108,
+    left: Platform.OS === 'web' ? 24 : 14,
+    right: Platform.OS === 'web' ? 24 : 14,
+    bottom: Platform.OS === 'web' ? 26 : 108,
+    ...(Platform.OS === 'web' ? { maxWidth: 980, alignSelf: 'center', width: '100%' } : null),
   },
   panelCard: {
     borderRadius: 32,
